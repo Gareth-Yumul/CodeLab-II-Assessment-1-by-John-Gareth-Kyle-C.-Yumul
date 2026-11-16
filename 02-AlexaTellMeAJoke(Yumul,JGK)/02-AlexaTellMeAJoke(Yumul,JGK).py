@@ -60,3 +60,42 @@ class JokeApp:
         self.next_button = tk.Button(buttons, text="Next Joke", width=20, state="disabled", command=self.next_joke)
         self.next_button.grid(row=1, column=0, padx=6, pady=4)
         tk.Button(buttons, text="Quit", width=20, command=root.destroy).grid(row=1, column=1, padx=6, pady=4)
+        
+    # Moves to the next joke in shuffled order then resuffles when the first rounf is finish
+    def _advance(self):
+        self.position += 1
+        if self.position >= len(self.order):
+            last = self.order[-1] if self.order else None
+            self.order = random.sample(range(len(self.jokes)), len(self.jokes))
+            
+            # This allows the joke not to appear twice in a row across two rounds
+            if len(self.order) > 1 and self.order[0] == last:
+                self.order[0], self.order[1] = self.order[1], self.order[0]
+            self.position = 0
+
+    # It dispalys the current joke's setup and hides any old punchline
+    def _show_joke(self):
+        setup, _ = self.jokes[self.order[self.position]]
+        self.setup_label.config(text=setup)
+        self.punchline_label.config(text="")
+        self.punchline_button.config(state="normal")
+
+    # This handles the "Alexa tell me a joke" button, it shows first the firts joke then it disables the button handing it over to the "Next Joke" button for the following jokes
+    def tell_joke(self):
+        self._advance()
+        self._show_joke()
+        self.tell_button.config(state="disabled")
+        self.next_button.config(state="normal")
+
+    # This handles the "Show Punchline" button, it reveals the current joke's punchline when joke is displayed
+    def show_punchline(self):
+        if self.position < 0:
+            return
+        _, punchline = self.jokes[self.order[self.position]]
+        self.punchline_label.config(text=punchline)
+        self.punchline_button.config(state="disabled")
+
+    # This handles the "Next Joke" button, it allows to move to the next joke in the shuffled round
+    def next_joke(self):
+        self._advance()
+        self._show_joke()
