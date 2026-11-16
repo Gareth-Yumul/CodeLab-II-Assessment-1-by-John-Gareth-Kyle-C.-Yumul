@@ -120,6 +120,6 @@ def main():
     JokeApp(root, jokes)
     root.mainloop()
 
-#Explain this part
+# This runs only when this file is executed directly not when imported
 if __name__ == "__main__":
     main()
