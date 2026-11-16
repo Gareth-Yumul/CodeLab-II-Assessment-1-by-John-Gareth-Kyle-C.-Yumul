@@ -123,3 +123,73 @@ class MathsQuiz:
             self.displayMenu()
         else:
             self.root.destroy()
+
+    # Helpers
+
+    # This start the game 
+    def _start_game(self, difficulty):
+        self.difficulty = difficulty
+        self.score = 0
+        self.question_number = 0
+        self.displayProblem()
+
+    # It validate input then check it folllow it by awarding points and advance
+    def handle_submit(self, event=None):
+        if self.locked:
+            return
+
+        # A bad input never costs an attempt 
+        text = self.entry.get().strip()
+        if not Integer_Pattern.fullmatch(text):
+            self._set_feedback("Please enter a whole number like: 42 or -54.")
+            return
+        
+        # This part runs the result of the user and it will determine the score of each question and advances the next part 
+        if self.isCorrect(int(text), self.correct_answer):
+            self.score += Points_First_Try if self.attempt == 1 else Points_Second_Try
+            self._finish_question()
+        elif self.attempt == 1:
+            self.attempt = 2
+            self.entry.delete(0, tk.END)
+        else:
+            self._finish_question()  # second miss: 0 points and answer will be shown
+            
+    # It locks the input of user and after a short pause it moves on to the next step
+    def _finish_question(self):
+        self.locked = True
+        self._update_status()
+        self.root.after(Feedback_Delay_Ms, self._next_step)
+
+    # It shows the next question or result once all questions are done
+    def _next_step(self):
+        if self.question_number < Questions_Per_Game:
+            self.displayProblem()
+        else:
+            self.displayResults()
+            
+    # This refreshes the "Question: x/10 Score: Y" at the top of the screen
+    def _update_status(self):
+        self.status_label.config(
+            text=f"Question {self.question_number}/{Questions_Per_Game} Score: {self.score}")
+        
+    # This is the color part of the messages display under the answer box
+    def _set_feedback(self, message, colour):
+        self.feedback_label.config(text=message, fg=colour)
+
+    # This returns the grade of the user 
+    @staticmethod
+    def grade_for(score):
+        return next(grade for cutoff, grade in Grade_Boundaries if score >= cutoff)
+
+# It creates the window and shows the difficulty menu which eventually starts the event loop
+def main():
+    root = tk.Tk()
+    root.title("Maths Quiz")
+    root.geometry("420x340")
+    root.resizable(False, False)
+    MathsQuiz(root).displayMenu()
+    root.mainloop()
+
+# This runs only when this file is executed directly not when imported
+if __name__ == "__main__":
+    main()
