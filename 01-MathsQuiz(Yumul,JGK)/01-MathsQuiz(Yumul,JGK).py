@@ -141,7 +141,7 @@ class MathsQuiz:
         # A bad input never costs an attempt 
         text = self.entry.get().strip()
         if not Integer_Pattern.fullmatch(text):
-            self._set_feedback("Please enter a whole number like: 42 or -54.")
+            self._set_feedback("Please enter a whole number like: 42 or -54.", "orange")
             return
         
         # This part runs the result of the user and it will determine the score of each question and advances the next part 
@@ -193,3 +193,4 @@ def main():
 # This runs only when this file is executed directly not when imported
 if __name__ == "__main__":
     main()
+
