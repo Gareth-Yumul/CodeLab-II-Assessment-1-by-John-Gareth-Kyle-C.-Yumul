@@ -224,5 +224,43 @@ class StudentManager:
 
         self.show_all() # This start by showing every student on the list
 
-# Helpers
+# Helpers for the menu
 
+    #This replace the tables rows with students and set the summary line
+    def _show(self, students, summary):
+        self.table.delete(*self.table.get_children()) # This remove the old rows
+        for student in students:
+            self.table.insert("", "end", values=(student.name, student.code, student.coursework_total(), student.exam, f"{student.percentage():.1f}%", student.grade())) # It add one row per student with the values in the same order as the columns
+        self.summary.config(text=summary) # This shows the caller's message under the table
+
+    # This empties the input area so each menu item starts with a blank space
+    def _clear_controls(self):
+        for widget in self.controls.winfo_children():
+            widget.destroy()
+
+    # This is a summary text it shows how many student are there and their average percentage
+    def _class_summary(self, students):
+        return f"Students in class: {len(students)} Average percentage: {average_percentage(students):.1f}%"
+
+    # This saves the student list to the file but shows an error and return False if that fails
+    def _save(self):
+        try:
+            save_students(self.path, self.students)
+        except OSError as error: # this is if the file locked or disk full but in general a file problem
+            messagebox.showerror("Could not save", f"The file was not updated: {error}")
+            return False
+        return True
+
+    # This finds exactly one student from what the user input or return none if it cant
+    def _select_one(self, query):
+        matches = find_students(self.students, query) # This shows everyone who matches
+        if not matches:# This shows id user input not match
+            messagebox.showinfo("Not found", "No student matches that name or number.")
+            return None
+        if len(matches) > 1: # This shows more the one student that match user input and will ask for student number instead
+            self._show(matches, "More than one match - enter the student number instead.")
+            messagebox.showinfo("Several matches", "More than one student matches. Enter the student number instead.")
+            return None
+        return matches[0]    
+
+# Menu items for 1-4
